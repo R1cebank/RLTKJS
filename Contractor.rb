@@ -21,7 +21,7 @@ module JS
       @engine = RLTK::CG::JITCompiler.new(@module)
 
       # pass to
-      @module.fpm.add(:InstCombine, :Reassociate, :GVN, :CFGSimplify)
+      @module.fpm.add(:InstCombine, :Reassociate, :GVN, :CFGSimplify, :PromoteMemToReg)
     end
 
     def add(ast)
@@ -40,13 +40,12 @@ module JS
     end
 
     on Assign do |node|
+      puts node.right
       right = visit node.right
       loc =
       if @st.has_key?(node.name)
-        puts "good"
         @st[node.name]
       else
-        puts "bad"
         @st[node.name] = alloca RLTK::CG::DoubleType, node.name
       end
       store right, loc
@@ -77,10 +76,8 @@ module JS
 		end
 
     on Variable do |node|
-      puts "here"
-      puts @st
       if @st.key?(node.name)
-        @st[node.name]
+        self.load @st[node.name], node.name
       else
         raise "Uninitialized variable '#{node.name}'."
       end
@@ -92,6 +89,9 @@ module JS
       RLTK::CG::Double.new(1.to_s)
     end
     on Function do |node|
+
+      # Reset the symbol table.
+      @st.clear
 
 			# Translate the function's prototype.
 			fun = visit node.proto
@@ -125,7 +125,7 @@ module JS
 			# Name each of the function paramaters.
 			fun.tap do
 				node.arg_names.each_with_index do |name, i|
-					(@st[name] = fun.params[i]).name = name
+					fun.params[i].name = name
 				end
 			end
     end

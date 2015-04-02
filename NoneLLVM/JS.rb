@@ -12,7 +12,6 @@ begin
   ast = JS::Parser.parse(JS::Lexer.lex(contents))
   ast.each do |node|
     ir = jit.add(node)
-    jit.optimize(ir).dump
     ir.dump()
     puts jit.execute(ir).to_f(RLTK::CG::DoubleType)
   end
