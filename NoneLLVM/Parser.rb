@@ -26,11 +26,40 @@ module JS
       #clause('statement SEMI')    {|e, _|  e }
       #clause('statement ENDL')    {|e, _|  e }
       clause('expression')    {|e|  e }
+      clause('ifstmt') { |e| e  }
       clause('VAR ID EQ expression') { |_,name,_,exp| Assign.new(name, exp)}
       clause('ID EQ expression') { |name,_,exp| Assign.new(name,exp)}
       clause('DOCW LPAREN args RPAREN') {
         |_, _, args, _|
         Write.new(args)
+      }
+    end
+
+    production(:ifstmt) do
+      clause('IF LPAREN expression RPAREN LCURL block RCURL') {
+        |_,_,cond,_,_,block,_|
+        IfStmt.new(cond, block, nil)
+      }
+      clause('IF LPAREN expression RPAREN LCURL block RCURL ELSE ifstmt') {
+        |_,_,cond,_,_,block,_,_,ifstmt|
+        IfStmt.new(cond, block, [ifstmt])
+      }
+      clause('IF LPAREN expression RPAREN LCURL block RCURL ELSE LCURL block RCURL') {
+        |_,_,cond,_,_,block,_,_,_,eblock,_|
+        IfStmt.new(cond, block, eblock)
+      }
+    end
+
+    production(:block) do
+      clause('statement') {
+        |stmt|
+        stmtList = Array.new
+        stmtList.push(stmt)
+      }
+      clause('block statement') {
+        |block, stmt|
+        puts "block stmt"
+        block.push(stmt)
       }
     end
 

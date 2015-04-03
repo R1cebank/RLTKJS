@@ -16,9 +16,21 @@ module JS
   class Write < Expression
     value :arg_names, [Expression]
   end
+  class IfStmt < Expression
+    value :cond,      Expression
+    value :ifBlock,   [Expression]
+    value :elseBlock, [Expression]
+  end
   class Binary < Expression
     child :left,  Expression
     child :right, Expression
+  end
+  class Bool < Expression; end
+  class True < Bool
+    value :value,  TrueClass
+  end
+  class False < Bool
+    value :value,  FalseClass
   end
   class Number < Expression
     value :value, Integer

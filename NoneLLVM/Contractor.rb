@@ -2,6 +2,8 @@ module JS
   class Contractor
     def initialize
       @st = Hash.new
+      @st["true"] = True.new(true)
+      @st["false"] = False.new(false)
     end
     def add(ast)
       case ast
@@ -23,6 +25,13 @@ module JS
         else
           @st[ast.name] = right
           return nil
+        end
+      when IfStmt then
+        cond = visit(ast.cond)
+        if cond.value
+          ast.ifBlock.map { |stmt| visit(stmt)}
+        else
+          ast.elseBlock.map { |stmt| visit(stmt)}
         end
       when Variable then
         if @st.key?(ast.name)

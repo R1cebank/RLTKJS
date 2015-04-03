@@ -29,6 +29,8 @@ module JS
 		rule(/\//)	{ :DIV    }
     rule(/=/)   { :EQ     }
     rule(/\./)  { :DOT    }
+    rule(/if/)  { :IF     }
+    rule(/else/){ :ELSE   }
 
     # identifier
     rule(/[A-Za-z][A-Za-z0-9]*/) { |t| [:ID, t] }

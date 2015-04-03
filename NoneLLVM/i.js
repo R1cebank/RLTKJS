@@ -6,6 +6,10 @@ var obj = {
   this: "this",
   that: two
 }
-two = 1/0
 document.write(two, linebreak)
+if(false) {
+  document.write("true")
+} else {
+  document.write("false")
+}
 </script>
