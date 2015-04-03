@@ -38,7 +38,7 @@ module JS
     production(:ifstmt) do
       clause('IF LPAREN expression RPAREN LCURL block RCURL') {
         |_,_,cond,_,_,block,_|
-        IfStmt.new(cond, block, nil)
+        IfStmt.new(cond, block, Array.new)
       }
       clause('IF LPAREN expression RPAREN LCURL block RCURL ELSE ifstmt') {
         |_,_,cond,_,_,block,_,_,ifstmt|
@@ -83,6 +83,8 @@ module JS
       clause('expression SUB expression') {|e1,_,e2| Sub.new(e1,e2)}
       clause('expression MUL expression') {|e1,_,e2| Mul.new(e1,e2)}
       clause('expression DIV expression') {|e1,_,e2| Div.new(e1,e2)}
+      clause('expression AND expression') {|e1,_,e2|}
+      clause('expression OR expression')  {|e1,_,e2|}
     end
     # list(:args, :expression, :COMMA)
     finalize({:use => 'jsparser.tbl'})

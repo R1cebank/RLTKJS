@@ -7,9 +7,12 @@ var obj = {
   that: two
 }
 document.write(two, linebreak)
-if(false) {
+if(true) {
   document.write("true")
-} else {
+} else if(false) {
   document.write("false")
 }
+var hi = "hello " + "world"
+document.write(linebreak)
+document.write(hi1)
 </script>

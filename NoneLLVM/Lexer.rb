@@ -13,12 +13,23 @@ module JS
     # keywords
     rule(/var/) {  :VAR  }
     rule(/document.write/) {  :DOCW  }
+    rule(/if/)  { :IF     }
+    rule(/else/){ :ELSE   }
 
     # operators and delimiters.
 		rule(/\(/)	{ :LPAREN }
 		rule(/\)/)	{ :RPAREN }
     rule(/{/)   { :LCURL  }
     rule(/}/)   { :RCURL  }
+    rule(/>/)   { :GT     }
+    rule(/</)   { :LESS   }
+    rule(/>=/)  { :GTEQ   }
+    rule(/<=/)  { :LESSEQ }
+    rule(/!=/)  { :NOTEQLV}
+    rule(/==/)  { :EQLV   }
+    rule(/&&/)  { :AND    }
+    rule(/||/)  { :OR     }
+    rule(/!/)   { :NOT    }
     #rule(/\n/)  { :ENDL   }
 		#rule(/;/)		{ :SEMI   }
     rule(/:/)   { :COLON  }
@@ -29,8 +40,6 @@ module JS
 		rule(/\//)	{ :DIV    }
     rule(/=/)   { :EQ     }
     rule(/\./)  { :DOT    }
-    rule(/if/)  { :IF     }
-    rule(/else/){ :ELSE   }
 
     # identifier
     rule(/[A-Za-z][A-Za-z0-9]*/) { |t| [:ID, t] }
