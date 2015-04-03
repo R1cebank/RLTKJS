@@ -31,8 +31,8 @@ module JS
 
     # numeric rules.
     rule(/\d+/)		{ |t| [:NUMBER, t.to_f] }
-		rule(/\.\d+/)		{ |t| [:NUMBER, t.to_f] }
-		rule(/\d+\.\d+/)	{ |t| [:NUMBER, t.to_f] }
+		#rule(/\.\d+/)		{ |t| [:NUMBER, t.to_f] }
+		#rule(/\d+\.\d+/)	{ |t| [:NUMBER, t.to_f] }
 
     # string rules.
     rule(/"[^"^\n]*"/) { |t| [:STRING, t.to_s]}

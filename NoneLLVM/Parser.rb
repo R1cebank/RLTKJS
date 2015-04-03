@@ -36,8 +36,8 @@ module JS
     list(:args, :expression, :COMMA)
 
     production(:expression) do
-      clause('NUMBER') { |n| Number.new(n)}
-      clause('STRING') { |n| Str.new(n)}
+      clause('NUMBER') { |n| Number.new(n.to_i)}
+      clause('STRING') { |n| StrLiteral.new(n[1..-2])}
       clause('ID') {|n| Variable.new(n)}
 
       clause('LPAREN expression RPAREN') {|_,e,_| e}
