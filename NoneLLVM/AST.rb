@@ -2,6 +2,13 @@ require 'rltk/ast'
 
 module JS
   class Expression < RLTK::ASTNode; end
+  class Field < Expression
+    value :name,  String
+    value :expr, Expression
+  end
+  class Object < Expression
+    value :fields, [Field]
+  end
   class Assign < Expression
     value :name,  String
     child :right, Expression
@@ -18,6 +25,10 @@ module JS
   end
   class StrLiteral < Expression
     value :value, String
+  end
+  class ObjVariable < Expression
+    value :name,  String
+    value :fname, String
   end
   class Variable < Expression
     value :name,  String

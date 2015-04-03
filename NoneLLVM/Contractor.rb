@@ -11,53 +11,77 @@ module JS
       end
     end
     def visit(ast)
+      if ast == nil
+        return nil
+      end
       case ast
       when Assign then
         right = visit(ast.right)
         if @st.has_key?(ast.name)
-          raise 'Variable already defined'
+          @st[ast.name] = right
           return nil
         else
           @st[ast.name] = right
           return nil
         end
-      when Variable
+      when Variable then
         if @st.key?(ast.name)
           return @st[ast.name]
         else
           raise "Uninitialized variable '#{node.name}'."
           return nil
         end
+      when ObjVariable then
+        obj = visit(Variable.new(ast.name))
+        if obj.key?(ast.fname)
+          return obj[ast.fname]
+        else
+          raise "Undeclared field"
+        end
+        puts obj.inspect
+      when Object then
+        fields = ast.fields.map { |node| node = visit(node)}
+        obj = Hash.new
+        fields.each { |field| obj[field.name] = field.expr}
+        return obj
+      when Field then
+        return Field.new(ast.name, visit(ast.expr))
       when Write then
         args = ast.arg_names.map{ |node| node = visit(node)}
         str = ""
         args.map { |node|
-          if node.value.to_s != "<br />"
+          if node == nil
+            str += "nil"
+          elsif node.value.to_s != "<br />"
             str += node.value.to_s
           else
             str += "\n"
           end
         }
         print str
-      when Add
+      when Add then
         left = visit(ast.left)
         right = visit(ast.right)
         return Number.new(left.value + right.value)
-      when Sub
+      when Sub then
         left = visit(ast.left)
         right = visit(ast.right)
         return Number.new(left.value - right.value)
-      when Mul
+      when Mul then
         left = visit(ast.left)
         right = visit(ast.right)
         return Number.new(left.value * right.value)
-      when Div
+      when Div then
         left = visit(ast.left)
         right = visit(ast.right)
+        if right.value == 0
+          puts 'divide by zero'
+          return nil
+        end
         return Number.new(left.value / right.value)
-      when Number
+      when Number then
         return Number.new(ast.value)
-      when StrLiteral
+      when StrLiteral then
         return StrLiteral.new(ast.value)
       end
     end

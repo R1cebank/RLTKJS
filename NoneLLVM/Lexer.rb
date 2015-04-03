@@ -5,6 +5,8 @@ module JS
     # whitespace
     rule(/\s/)
     rule(/\t/)
+    rule(/\n/)
+    rule(/;/)
     rule(/<script type="text\/JavaScript">/)
     rule(/<\/script>/)
 
@@ -15,8 +17,10 @@ module JS
     # operators and delimiters.
 		rule(/\(/)	{ :LPAREN }
 		rule(/\)/)	{ :RPAREN }
-    rule(/\n/)  { :ENDL   }
-		rule(/;/)		{ :SEMI   }
+    rule(/{/)   { :LCURL  }
+    rule(/}/)   { :RCURL  }
+    #rule(/\n/)  { :ENDL   }
+		#rule(/;/)		{ :SEMI   }
     rule(/:/)   { :COLON  }
 		rule(/,/)		{ :COMMA  }
 		rule(/\+/)	{ :PLUS   }
@@ -30,7 +34,7 @@ module JS
     rule(/[A-Za-z][A-Za-z0-9]*/) { |t| [:ID, t] }
 
     # numeric rules.
-    rule(/\d+/)		{ |t| [:NUMBER, t.to_f] }
+    rule(/\d+/)		{ |t| [:NUMBER, t.to_i] }
 		#rule(/\.\d+/)		{ |t| [:NUMBER, t.to_f] }
 		#rule(/\d+\.\d+/)	{ |t| [:NUMBER, t.to_f] }
 
