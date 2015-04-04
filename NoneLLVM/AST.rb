@@ -9,6 +9,14 @@ module JS
   class Object < Expression
     value :fields, [Field]
   end
+  class List < Expression
+    value :fields, [Expression]
+  end
+  class AssignArray < Expression
+    value :name,  String
+    value :index, Integer
+    child :right, Expression
+  end
   class Assign < Expression
     value :name,  String
     child :right, Expression
@@ -42,6 +50,10 @@ module JS
     value :name,  String
     value :fname, String
   end
+  class ArrayVariable < Expression
+    value :name,  String
+    value :index, Integer
+  end
   class Variable < Expression
     value :name,  String
   end
@@ -49,6 +61,14 @@ module JS
   class Sub < Binary; end
   class Mul < Binary; end
   class Div < Binary; end
+  class And < Binary; end
+  class Or  < Binary; end
+  class Gt  < Binary; end
+  class Less < Binary; end
+  class GtEq < Binary; end
+  class LessEq < Binary; end
+  class Eqlv < Binary; end
+  class NotEqlv < Binary; end
 
   class Prototype < RLTK::ASTNode
     value :name,  String

@@ -21,6 +21,8 @@ module JS
 		rule(/\)/)	{ :RPAREN }
     rule(/{/)   { :LCURL  }
     rule(/}/)   { :RCURL  }
+    rule(/\[/)  { :LBRA   }
+    rule(/\]/)  { :RBRA   }
     rule(/>/)   { :GT     }
     rule(/</)   { :LESS   }
     rule(/>=/)  { :GTEQ   }
@@ -28,7 +30,7 @@ module JS
     rule(/!=/)  { :NOTEQLV}
     rule(/==/)  { :EQLV   }
     rule(/&&/)  { :AND    }
-    rule(/||/)  { :OR     }
+    rule(/\|\|/)  { :OR     }
     rule(/!/)   { :NOT    }
     #rule(/\n/)  { :ENDL   }
 		#rule(/;/)		{ :SEMI   }

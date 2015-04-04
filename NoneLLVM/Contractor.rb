@@ -27,18 +27,24 @@ module JS
           @st[ast.name] = right
           return nil
         end
+      when AssignArray then
+        right = visit(ast.right)
+        if @st.has_key?(ast.name)
+          @st[ast.name][ast.index] = right
+          return nil
+        else
+          return nil
+        end
       when IfStmt then
         cond = visit(ast.cond)
         if cond.value
           ast.ifBlock.map { |stmt| visit(stmt)}
-        end
+        else
           ast.elseBlock.map {
             |stmt|
-            case stmt
-            when IfStmt
-              visit(stmt)
-            end
+            visit(stmt)
           }
+        end
       when Variable then
         if @st.key?(ast.name)
           return @st[ast.name]
@@ -53,7 +59,9 @@ module JS
         else
           raise "undeclared field"
         end
-        puts obj.inspect
+      when ArrayVariable then
+        arr = visit(Variable.new(ast.name))
+        return arr[ast.index]
       when Object then
         fields = ast.fields.map { |node| node = visit(node)}
         obj = Hash.new
@@ -74,6 +82,98 @@ module JS
           end
         }
         print str
+      when And then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if typecheck(left, right, "JS::Bool") != nil
+          val = (left.value && right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        else
+          return nil
+        end
+      when Or then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if typecheck(left, right, "JS::Bool") != nil
+          val = (left.value || right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        else
+          return nil
+        end
+      when Gt then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if type2check(left, right) != nil
+          val = (left.value > right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        end
+      when Less then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if type2check(left, right) != nil
+          val = (left.value < right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        end
+      when GtEq then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if type2check(left, right) != nil
+          val = (left.value >= right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        end
+      when LessEq then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if type2check(left, right) != nil
+          val = (left.value <= right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        end
+      when NotEqlv then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if type2check(left, right) != nil
+          val = (left.value != right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        end
+      when Eqlv then
+        left = visit(ast.left)
+        right = visit(ast.right)
+        if type2check(left, right) != nil
+          val = (left.value == right.value)
+          if val
+            return @st["true"]
+          else
+            return @st["false"]
+          end
+        end
       when Add then
         left = visit(ast.left)
         right = visit(ast.right)
@@ -119,6 +219,19 @@ module JS
         return Number.new(ast.value)
       when StrLiteral then
         return StrLiteral.new(ast.value)
+      when List then
+        fields = ast.fields.map { |node| node = visit(node)}
+        arr = Array.new
+        fields.each { |field| arr.push(field)}
+        return arr
+      end
+    end
+    def typecheck(e1, e2, type)
+      if (e1.class.superclass.name != type) || (e2.class.superclass.name != type)
+        puts "type error"
+        return nil
+      else
+        return e1
       end
     end
     def type2check(e1, e2)
