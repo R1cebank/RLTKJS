@@ -13,8 +13,10 @@ module JS
     # keywords
     rule(/var/) {  :VAR  }
     rule(/document.write/) {  :DOCW  }
-    rule(/if/)  { :IF     }
-    rule(/else/){ :ELSE   }
+    rule(/if/)    { :IF     }
+    rule(/else/)  { :ELSE   }
+    rule(/while/) { :WHILE  }
+    rule(/do/)    { :DO     }
 
     # operators and delimiters.
 		rule(/\(/)	{ :LPAREN }

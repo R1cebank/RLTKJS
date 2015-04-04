@@ -3,8 +3,8 @@ module JS
     def initialize
       # add a new local map
       @st = Hash.new
-      @st["true"] = True.new(true)
-      @st["false"] = False.new(false)
+      @st["true"] = True.new(0, true)
+      @st["false"] = False.new(0, false)
     end
     def add(ast)
       case ast
@@ -35,6 +35,18 @@ module JS
         else
           return nil
         end
+      when While then
+        cond = visit(ast.cond)
+        if cond.value
+          ast.block.map { |stmt| visit(stmt)  }
+          visit(ast)
+        end
+      when DoWhile then
+        ast.block.map { |stmt| visit(stmt)  }
+        cond = visit(ast.cond)
+        if cond.value
+          visit(ast)
+        end
       when IfStmt then
         cond = visit(ast.cond)
         if cond.value
@@ -49,18 +61,24 @@ module JS
         if @st.key?(ast.name)
           return @st[ast.name]
         else
-          puts "uninitialized variable"
-          return nil
+          puts "Line #{ast.lineno}, #{ast.name} has no value"
+          return Undef.new(ast.lineno, "undefined")
         end
       when ObjVariable then
-        obj = visit(Variable.new(ast.name))
-        if obj.key?(ast.fname)
-          return obj[ast.fname]
-        else
-          raise "undeclared field"
+        obj = visit(Variable.new(ast.lineno, ast.name))
+        case obj
+        when Undef then
+          return Undef.new(ast.lineno, "undefined")
+        when Hash then
+          if obj.key?(ast.fname)
+            return obj[ast.fname]
+          else
+            puts "Line #{ast.lineno}, field #{ast.fname} is not found in object #{ast.name}"
+          end
+        else puts "Line #{ast.lineno}, #{ast.name} is not an object"
         end
       when ArrayVariable then
-        arr = visit(Variable.new(ast.name))
+        arr = visit(Variable.new(ast.lineno, ast.name))
         return arr[ast.index]
       when Object then
         fields = ast.fields.map { |node| node = visit(node)}
@@ -68,13 +86,13 @@ module JS
         fields.each { |field| obj[field.name] = field.expr}
         return obj
       when Field then
-        return Field.new(ast.name, visit(ast.expr))
+        return Field.new(ast.lineno, ast.name, visit(ast.expr))
       when Write then
         args = ast.arg_names.map{ |node| node = visit(node)}
         str = ""
         args.map { |node|
           if node == nil
-            str += "nil"
+            str += "undefined"
           elsif node.value.to_s != "<br />"
             str += node.value.to_s
           else
@@ -111,7 +129,7 @@ module JS
       when Gt then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           val = (left.value > right.value)
           if val
             return @st["true"]
@@ -177,12 +195,12 @@ module JS
       when Add then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           case left
           when Number then
-            return Number.new(left.value + right.value)
+            return Number.new(ast.lineno, left.value + right.value)
           when StrLiteral then
-            return StrLiteral.new(left.value + right.value)
+            return StrLiteral.new(ast.lineno, left.value + right.value)
           end
         else
           return nil
@@ -190,16 +208,16 @@ module JS
       when Sub then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
-          return Number.new(left.value - right.value)
+        if type2check(ast.lineno, left, right) != nil
+          return Number.new(ast.lineno, left.value - right.value)
         else
           return nil
         end
       when Mul then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
-          return Number.new(left.value * right.value)
+        if type2check(ast.lineno, left, right) != nil
+          return Number.new(ast.lineno, left.value * right.value)
         else
           return nil
         end
@@ -210,15 +228,15 @@ module JS
           puts 'divide by zero'
           return nil
         end
-        if type2check(left, right) != nil
-          return Number.new(left.value / right.value)
+        if type2check(ast.lineno, left, right) != nil
+          return Number.new(ast.lineno, left.value / right.value)
         else
           return nil
         end
       when Number then
-        return Number.new(ast.value)
+        return Number.new(ast.lineno, ast.value)
       when StrLiteral then
-        return StrLiteral.new(ast.value)
+        return StrLiteral.new(ast.lineno, ast.value)
       when List then
         fields = ast.fields.map { |node| node = visit(node)}
         arr = Array.new
@@ -234,11 +252,11 @@ module JS
         return e1
       end
     end
-    def type2check(e1, e2)
+    def type2check(lineno, e1, e2)
       if e1.class.name == e2.class.name
         return e1
       else
-        puts "type error"
+        puts "Line #{lineno}, type violation"
         return nil
       end
     end

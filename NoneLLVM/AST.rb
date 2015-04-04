@@ -1,7 +1,9 @@
 require 'rltk/ast'
 
 module JS
-  class Expression < RLTK::ASTNode; end
+  class Expression < RLTK::ASTNode
+    value :lineno,  Integer
+  end
   class Field < Expression
     value :name,  String
     value :expr, Expression
@@ -24,6 +26,12 @@ module JS
   class Write < Expression
     value :arg_names, [Expression]
   end
+  class Loop < Expression
+    value :cond,      Expression
+    value :block,     [Expression]
+  end
+  class While < Loop; end
+  class DoWhile    < Loop; end
   class IfStmt < Expression
     value :cond,      Expression
     value :ifBlock,   [Expression]
@@ -32,6 +40,9 @@ module JS
   class Binary < Expression
     child :left,  Expression
     child :right, Expression
+  end
+  class Undef < Expression
+    value :value, String
   end
   class Bool < Expression; end
   class True < Bool
