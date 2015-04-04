@@ -23,6 +23,10 @@ module JS
     value :name,  String
     child :right, Expression
   end
+  class Update < Expression
+    value :name,  String
+    child :right, Expression
+  end
   class Write < Expression
     value :arg_names, [Expression]
   end

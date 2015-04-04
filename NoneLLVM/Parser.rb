@@ -29,7 +29,7 @@ module JS
       clause('loop')   { |e| e  }
       clause('VAR ID') { |_,n| Assign.new(pos(0).line_number, n, nil)}
       clause('VAR ID EQ expression') { |_,name,_,exp| Assign.new(pos(0).line_number, name, exp)}
-      clause('ID EQ expression') { |name,_,exp| Assign.new(pos(0).line_number, name,exp)}
+      clause('ID EQ expression') { |name,_,exp| Update.new(pos(0).line_number, name,exp)}
       clause('ID LBRA NUMBER RBRA EQ expression') {
         |name, _, i, _, _, exp|
         AssignArray.new(pos(0).line_number, name,i,exp)
