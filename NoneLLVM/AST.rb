@@ -19,6 +19,11 @@ module JS
     value :index, Integer
     child :right, Expression
   end
+  class AssignObject < Expression
+    value :name,  String
+    value :fname, String
+    child :right, Expression
+  end
   class Assign < Expression
     value :name,  String
     child :right, Expression

@@ -37,6 +37,14 @@ module JS
           emitError(ast.lineno, "Line #{ast.lineno}, #{ast.name} undeclared")
           return nil
         end
+      when AssignObject then
+        right = visit(ast.right)
+        if @st.has_key?(ast.name)
+          @st[ast.name][ast.fname] = right
+          return nil
+        else
+          return nil
+        end
       when AssignArray then
         right = visit(ast.right)
         if @st.has_key?(ast.name)

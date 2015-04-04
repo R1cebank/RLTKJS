@@ -1,0 +1,14 @@
+20 new tests:  4 points each
+Regression:   20 points
+
+Grammar: 1 - 6 on objects
+             7 "<br />" string
+Type rules:   8 - 12
+Runtime errors: 13 - 14  
+Type / Runtime: 15
+Printing:  16 - 20
+	Order of Ops
+	Obj field as scalar
+	Object
+	strcat
+	newline

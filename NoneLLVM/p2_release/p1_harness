@@ -1,0 +1,89 @@
+#!/usr/bin/perl -w
+
+use autodie;
+
+$tests = 23;
+@errors = (1, 2, 6, 10, 12, 18, 20);
+@points = (3, 3, 4, 10, 3, 2, 5, 5, 5, 5, 4, 1, 7, 6, 5, 7, 3, 2, 3, 2, 5, 5, 5);
+
+#make sure the points add up to 100
+$sum = 0;
+foreach (@points){
+	$sum += $_;
+}
+if($sum != 100){
+	#print "Oops, 100 points isn't possible, " . $sum . " are.\n";
+}
+
+$sum = 5;
+
+$cmd = "make 1>tmp.txt 2>&1";
+system($cmd);
+open FILE, '<', "tmp.txt";
+$result = join("", <FILE>);
+if(index($result, 'conflict') != -1){
+	#print "Code contains grammar conflicts!\n";
+	#$sum -= 10;
+}
+close FILE;
+
+$valid = 1;
+
+for(my $i = 1; $i <= $tests; $i++){
+	if($i == 10){
+		next;
+	}
+	$testfile = "tests/test".$i;
+	$cmd = "timeout 2 ./parser ".$testfile." 1>tmp.txt 2>&1";
+
+	#sigh, have to deal with non terminating programs ...
+	system($cmd);
+	#printf "child exited with value %d\n", $? >> 8;
+	if($? >> 8 == 124){
+		#print "timed out\n";
+		next;
+	}
+
+	open FILE, '<', "tmp.txt";
+	$result = join("", <FILE>);
+	close FILE;
+
+	#print "Test ".$i." ";
+
+	foreach (@errors){
+		#print "checking errors: ".$_."\n";
+		if($i == $_){
+			#print "found an error test case, #".$i."\n";
+			if($result =~ m/syntax error/g){
+				$sum += $points[$i - 1];
+				#print "passed\n";
+			}
+			else{
+				#print "failed\n";
+			}
+			$valid = 0;
+			last;
+		}
+	}
+	if($valid){
+		#print "found a valid test case, #".$i."\n";
+		if($result =~ m/syntax error/g){
+			#print "failed\n";
+		}
+		else{
+			$sum += $points[$i - 1];
+			#print "passed\n";
+		}
+	}
+	$valid = 1;
+	
+	#print "\n\n";
+}
+
+if($sum < 0){
+	$sum = 0;
+}
+
+#print "\n\nTotal Score: ".$sum."\n";
+
+print $sum;

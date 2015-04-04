@@ -1,4 +1,5 @@
 <script type="text/JavaScript">
-var i = {}
-i.foo = 2
+var a = {}
+a.foo = 2;
+a.bar = 2;
 </script>

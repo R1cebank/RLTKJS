@@ -1,0 +1,83 @@
+#!/usr/bin/perl -w
+
+use autodie;
+
+$tests = 20;
+$output = 8;
+$points = 4;
+
+$sum = 0;
+
+$cmd = "make 1>tmp.txt 2>&1";
+system($cmd);
+open FILE, '<', "tmp.txt";
+$result = join("", <FILE>);
+if(index($result, 'conflict') != -1){
+	print "Code contains grammar conflicts!\n";
+	$sum -= 10;
+}
+close FILE;
+
+
+for(my $i = 1; $i <= $tests; $i++){
+	$testfile = "tests/".$i.".js";
+	$cmd = "timeout 2 ./parser ".$testfile." 1>tmp.txt 2>&1";
+
+	#sigh, have to deal with non terminating programs ...
+	system($cmd);
+	#printf "child exited with value %d\n", $? >> 8;
+	if($? >> 8 == 124){
+		#print "timed out\n";
+		next;
+	}
+
+	open FILE, '<', "tmp.txt";
+	$result = join("", <FILE>);
+	close FILE;
+
+	#print "Test ".$i." ";
+
+	if($i < $output){
+		if($result eq ""){
+			$sum += $points;
+			#print "Passed test ".$i."\n";
+		}
+		else{
+			print "Failed test ".$i."\n";
+		}
+	}
+	else{
+		$result =~ s/\s*(\S?)\s*/$1/g;
+		if($i >= 16) {
+			#$result = $result . "\n";
+		}
+		$result = lc $result;
+		$outfile = "tests/".$i.".out";
+		open FILE, '<', $outfile;
+		$expected = join("", <FILE>);
+		close FILE;
+		$expected =~ s/\s*(\S?)\s*/$1/g;
+		$expected = lc $expected;
+
+		#print "expected: ".$expected."\n";
+		#print "actual: ".$result."\n";
+		#this splits the string into characters, sorts them, then glues it back together
+		#This fuzzes testing some
+		if((join '', sort { $a cmp $b } split(//, $result)) eq
+			 (join '', sort { $a cmp $b } split(//, $expected))){
+			$sum += $points;
+			#print "Passed test ".$i."\n\n";
+		}
+		else{
+			print "Failed test ".$i."\n\n";
+		}
+	}
+}
+
+if($sum < 0){
+	$sum = 0;
+}
+
+#print "\n\nTotal Score: ".$sum."\n";
+
+print $sum  . "\n\n";

@@ -12,7 +12,7 @@ begin
   ast.each do |node|
     jit.add(node)
   end
-  #jit.printst()
+  jit.printst()
 rescue RLTK::LexingError, RLTK::NotInLanguage
   puts 'syntax error'
 end

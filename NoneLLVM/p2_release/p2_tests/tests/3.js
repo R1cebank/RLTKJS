@@ -1,4 +1,3 @@
 <script type="text/JavaScript">
-var i = {}
-i.foo = 2
+var a = {field:2, foo:"abe"}
 </script>

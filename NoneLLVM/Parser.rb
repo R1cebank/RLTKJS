@@ -28,6 +28,7 @@ module JS
       clause('ifstmt') { |e| e  }
       clause('loop')   { |e| e  }
       clause('VAR ID') { |_,n| Assign.new(pos(0).line_number, n, nil)}
+      clause('ID DOT ID EQ expression') { |n,_,fn,_,exp| AssignObject.new(pos(0).line_number, n, fn, exp)}
       clause('VAR ID EQ expression') { |_,name,_,exp| Assign.new(pos(0).line_number, name, exp)}
       clause('ID EQ expression') { |name,_,exp| Update.new(pos(0).line_number, name,exp)}
       clause('ID LBRA NUMBER RBRA EQ expression') {
