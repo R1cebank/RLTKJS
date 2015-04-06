@@ -23,18 +23,3 @@ parser    - The bash script will behave like specified
 Prerequisits - run [gem install rltk] before executing this program,
                this program will not run unless rltk is installed on the host
                machine
-
-Performance -  The included source runs AST nodes in Ruby's environment, I have
-                removed LLVM for JIT compilation since it requires llvm-3.4 and
-                professor decided not to give extra credits for fast performance
-
-Part1 & 2 of this project is written in C++, I have rewritten them in Ruby which
-  is a language I am only familar with for 2 days. Please contact me or grade
-  this program manually if I got less than 90 points. Thank You
-
-
-
-This is a proprietary solution owned by Siyuan Gao.
-  Redistribution without express written authorization from all of the copyright
-  owners is strictly prohibited, and will be pursued to the fullest
-  extent of the applicable laws.

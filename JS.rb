@@ -10,12 +10,10 @@ contents = file.read
 
 begin
   ast = JS::Parser.parse(JS::Lexer.lex(contents))
-  ast.each do |node|
-    ir = jit.add(node)
-    jit.optimize(ir).dump
-    ir.dump()
-    puts jit.execute(ir).to_f(RLTK::CG::DoubleType)
-  end
+  jit.add(ast)
+  jit.finalize()
+  jit.dump()
+  puts "=> #{jit.execute().to_i()}"
 rescue RLTK::LexingError, RLTK::NotInLanguage
   puts 'syntax error'
 end
