@@ -38,7 +38,8 @@ module JS
       @func["main"] = @module.functions.add("main",
                                             RLTK::CG::NativeIntType,
                                             [])
-
+      @st["test"] = @module.globals.add(RLTK::CG::PointerType.new(RLTK::CG::NativeIntType),"test")
+      @st["test"].linkage = :weak_any
     end
 
     def finalize()
@@ -50,6 +51,7 @@ module JS
 
     def add(ast)
       build(@func["main"].blocks.append("entry")) do
+        # initialize all global variables
         ast.map { |node| visit node }
         ret (RLTK::CG::NativeInt.new(0))
       end
@@ -66,6 +68,10 @@ module JS
       @func.each do |key, value|
         value.dump()
       end
+      @st.each do |key, value|
+        puts value.inspect
+      end
+      @st["test"].dump()
 
     end
     def dumpo()
