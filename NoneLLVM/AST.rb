@@ -4,6 +4,7 @@ module JS
   class Expression < RLTK::ASTNode
     value :lineno,  Integer
   end
+  class Break < Expression; end
   class Field < Expression
     value :name,  String
     value :expr, Expression
@@ -96,12 +97,16 @@ module JS
   end
   class Call < Expression
 		value :name, String
-
 		child :args, [Expression]
   end
+  class Return < Expression
+    value :expr,  Expression
+  end
   class Function < RLTK::ASTNode
-    child :proto, Prototype
-    child :body,  Expression
+    value :lineno,  Integer
+    value :name,      String
+    value :arg_name,  [String]
+    child :block,     [Expression]
   end
 
 end

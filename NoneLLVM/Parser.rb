@@ -19,13 +19,17 @@ module JS
         @stmtList = Array.new
         @stmtList.push(stmt)
       }
-      clause('program statement') {|prog, stmt| @stmtList.push(stmt)}
+      clause('program statement') {
+        |prog, stmt|
+        @stmtList.push(stmt)
+      }
     end
 
     production(:statement) do
       #clause('statement SEMI')    {|e, _|  e }
       #clause('statement ENDL')    {|e, _|  e }
       clause('ifstmt') { |e| e  }
+      clause('function') { |e| e }
       clause('loop')   { |e| e  }
       clause('VAR ID') { |_,n| Assign.new(pos(0).line_number, n, nil)}
       clause('ID DOT ID EQ expression') { |n,_,fn,_,exp| AssignObject.new(pos(0).line_number, n, fn, exp)}
@@ -67,6 +71,13 @@ module JS
       }
     end
 
+    production(:function) do
+      clause('FUNCTION ID LPAREN argnames RPAREN LCURL block RCURL') {
+        |_,name,_,argnames,_,_,block,_|
+        Function.new(pos(0).line_number, name, argnames, block)
+      }
+    end
+
     production(:block) do
       clause('statement') {
         |stmt|
@@ -83,6 +94,8 @@ module JS
       clause('ID COLON expression') { |name, _, exp | Field.new(pos(0).line_number, name,exp)}
     end
 
+    list(:argnames, :ID, :COMMA)
+
     list(:arrayfields, :expression, :COMMA)
 
     list(:fields, :field, :COMMA)
@@ -93,9 +106,15 @@ module JS
       clause('NUMBER') { |n| Number.new(pos(0).line_number, n)}
       clause('STRING') { |n| StrLiteral.new(pos(0).line_number, n[1..-2])}
       clause('ID') {|n| Variable.new(pos(0).line_number, n)}
+      clause('ID LPAREN args RPAREN') {
+        |name,_,args,_|
+        Call.new(pos(0).line_number, name, args)
+      }
       clause('ID LBRA NUMBER RBRA') { |n,_,i,_| ArrayVariable.new(pos(0).line_number, n,i)}
       clause('LBRA arrayfields RBRA') { |_,fields,_| List.new(pos(0).line_number, fields)}
+      clause('BREAK') { |_| Break.new(pos(0).line_number)}
 
+      clause('RETURN expression') { |_,e| Return.new(pos(0).line_number, e)}
       clause('ID DOT ID') { |name, _, fname| ObjVariable.new(pos(0).line_number, name, fname)}
       clause('LPAREN expression RPAREN') {|_,e,_| e}
       clause('LCURL fields RCURL') { |_, f, _| Object.new(pos(0).line_number, f)}

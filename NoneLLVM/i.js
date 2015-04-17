@@ -1,7 +1,7 @@
 <script type="text/JavaScript">
-var i = {
-  bar: "x" + 1
+function foo() {
+  var i = 1
 }
-i.foo = 2
-document.write(i.foo)
+foo()
+document.write(i, "<br />")
 </script>

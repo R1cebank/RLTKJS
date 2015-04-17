@@ -1,16 +1,22 @@
 module JS
   class Contractor
     def initialize
-      # add a new local map
       @st = Hash.new
+      @func = Hash.new
       @errors = Hash.new
       @st["true"] = True.new(0, true)
       @st["false"] = False.new(0, false)
     end
+    def pre(ast)
+      case ast
+      when Function then
+        @func[ast.name] = ast
+      end
+    end
     def add(ast)
       case ast
       when Expression then visit ast
-      when Function, Prototype then visit ast
+      when Function
       else raise 'Attempting to ass an unhandled node type to JIT.'
       end
     end
@@ -19,6 +25,14 @@ module JS
         return nil
       end
       case ast
+      when Call then
+        func = @func[ast.name]
+        if func != nil
+          func.block.map {
+            |stmt|
+            visit stmt
+          }
+        end
       when Assign then
         right = visit(ast.right)
         if @st.has_key?(ast.name)
@@ -53,7 +67,10 @@ module JS
         else
           return nil
         end
+      when Break then
+        return ast
       when While then
+        runStat = nil
         cond = visit(ast.cond)
         case cond
         when Undef
@@ -61,12 +78,37 @@ module JS
           return
         else
           if cond.value
-            ast.block.map { |stmt| visit(stmt)  }
-            visit(ast)
+            ast.block.map {
+              |stmt|
+              status = visit(stmt)
+              if status.kind_of?(Array)
+                if status.any?
+                  if status.include?(Break.new())
+                    runStat = Break.new()
+                    break
+                  end
+                end
+              end
+            }
+            if !runStat.kind_of?(Break)
+              visit(ast)
+            end
           end
         end
       when DoWhile then
-        ast.block.map { |stmt| visit(stmt)  }
+        runStat = nil
+        ast.block.map {
+          |stmt|
+          status = visit(stmt)
+          if status.kind_of?(Array)
+            if status.any?
+              if status.include?(Break.new())
+                runStat = Break.new()
+                break
+              end
+            end
+          end
+        }
         cond = visit(ast.cond)
         case cond
         when Undef
@@ -74,7 +116,9 @@ module JS
           return
         else
           if cond.value
-            visit(ast)
+            if !runStat.kind_of?(Break)
+              visit(ast)
+            end
           end
         end
       when IfStmt then
@@ -91,8 +135,10 @@ module JS
         if @st.key?(ast.name)
           return @st[ast.name]
         else
-          emitError(ast.lineno, "Line #{ast.lineno}, #{ast.name} has no value")
-          return Undef.new(ast.lineno, "undefined")
+          if !@func.key?(ast.name)
+            emitError(ast.lineno, "Line #{ast.lineno}, #{ast.name} has no value")
+            return Undef.new(ast.lineno, "undefined")
+          end
         end
       when ObjVariable then
         obj = visit(Variable.new(ast.lineno, ast.name))
@@ -179,7 +225,7 @@ module JS
       when Less then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           val = (left.value < right.value)
           if val
             return @st["true"]
@@ -192,7 +238,7 @@ module JS
       when GtEq then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           val = (left.value >= right.value)
           if val
             return @st["true"]
@@ -205,7 +251,7 @@ module JS
       when LessEq then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           val = (left.value <= right.value)
           if val
             return @st["true"]
@@ -218,7 +264,7 @@ module JS
       when NotEqlv then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           val = (left.value != right.value)
           if val
             return @st["true"]
@@ -231,7 +277,7 @@ module JS
       when Eqlv then
         left = visit(ast.left)
         right = visit(ast.right)
-        if type2check(left, right) != nil
+        if type2check(ast.lineno, left, right) != nil
           val = (left.value == right.value)
           if val
             return @st["true"]
@@ -282,8 +328,9 @@ module JS
         else
           return Undef.new(ast.lineno, "undefined")
         end
-      when Number then
         return Number.new(ast.lineno, ast.value)
+      when Number then
+      return Number.new(ast.lineno, ast.value)
       when StrLiteral then
         return StrLiteral.new(ast.lineno, ast.value)
       when List then
@@ -317,6 +364,9 @@ module JS
         puts error
         return true
       end
+    end
+    def printfunc
+      puts @func.inspect
     end
     def printst
       puts @st.inspect

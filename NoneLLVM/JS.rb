@@ -10,6 +10,10 @@ contents = file.read
 begin
   ast = JS::Parser.parse(JS::Lexer.lex(contents))
   ast.each do |node|
+    jit.pre(node)
+  end
+  ast.each do |node|
+    # puts node.inspect
     jit.add(node)
   end
   # jit.printst()

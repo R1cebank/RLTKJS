@@ -17,6 +17,9 @@ module JS
     rule(/else/)  { :ELSE   }
     rule(/while/) { :WHILE  }
     rule(/do/)    { :DO     }
+    rule(/break/) { :BREAK  }
+    rule(/function/) {  :FUNCTION   }
+    rule(/return/)   {  :RETURN     }
 
     # operators and delimiters.
 		rule(/\(/)	{ :LPAREN }
