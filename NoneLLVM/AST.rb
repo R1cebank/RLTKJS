@@ -105,7 +105,7 @@ module JS
   class Function < RLTK::ASTNode
     value :lineno,  Integer
     value :name,      String
-    value :arg_name,  [String]
+    value :arg_names,  [String]
     child :block,     [Expression]
   end
 

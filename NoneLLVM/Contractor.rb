@@ -1,11 +1,27 @@
 module JS
   class Contractor
     def initialize
+      @gst = Hash.new
       @st = Hash.new
       @func = Hash.new
       @errors = Hash.new
+      @ret = nil
       @st["true"] = True.new(0, true)
       @st["false"] = False.new(0, false)
+    end
+    def getret
+      return @ret
+    end
+    def setgst(g)
+      @gst = g
+    end
+    def setfunc(f)
+      @func = f
+    end
+    def setarg(names, values)
+      names.zip(values).each do |name, value|
+        @st[name] = visit(value)
+      end
     end
     def pre(ast)
       case ast
@@ -15,7 +31,8 @@ module JS
     end
     def add(ast)
       case ast
-      when Expression then visit ast
+      when Expression then
+        return visit(ast)
       when Function
       else raise 'Attempting to ass an unhandled node type to JIT.'
       end
@@ -26,13 +43,29 @@ module JS
       end
       case ast
       when Call then
+        # create a new jit engine
+        jit = JS::Contractor.new
+        jit.setgst(@st)
+        jit.setfunc(@func)
         func = @func[ast.name]
+        # check arg compliance
+        if ast.args.count != func.arg_names.count
+          emitError(ast.lineno, "Line #{ast.lineno}, type violation")
+        end
+        jit.setarg(func.arg_names, ast.args)
         if func != nil
           func.block.map {
             |stmt|
-            visit stmt
+            jit.add(stmt)
+            if jit.getret() != nil
+              break
+            end
           }
         end
+        result = jit.getret()
+        return result
+      when Return then
+        @ret = visit(ast.expr)
       when Assign then
         right = visit(ast.right)
         if @st.has_key?(ast.name)
@@ -46,6 +79,9 @@ module JS
         right = visit(ast.right)
         if @st.has_key?(ast.name)
           @st[ast.name] = right
+          return nil
+        elsif @gst.has_key?(ast.name)
+          @gst[ast.name] = right
           return nil
         else
           emitError(ast.lineno, "Line #{ast.lineno}, #{ast.name} undeclared")
@@ -134,6 +170,8 @@ module JS
       when Variable then
         if @st.key?(ast.name)
           return @st[ast.name]
+        elsif @gst.key?(ast.name)
+          return @gst[ast.name]
         else
           if !@func.key?(ast.name)
             emitError(ast.lineno, "Line #{ast.lineno}, #{ast.name} has no value")
@@ -367,6 +405,9 @@ module JS
     end
     def printfunc
       puts @func.inspect
+    end
+    def printcache
+      puts @resultCache.inspect
     end
     def printst
       puts @st.inspect

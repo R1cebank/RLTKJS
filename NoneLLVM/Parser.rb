@@ -5,6 +5,10 @@ module JS
   class Parser < RLTK::Parser
     left  :PLUS,  :SUB
     left  :MUL,   :DIV
+    left  :GT,    :LESS,  :GTEQ, :LESSEQ
+    left  :AND
+    left  :OR
+    left  :EQLV, :NOTEQLV
 
     @stmtList = nil
 
@@ -127,7 +131,7 @@ module JS
       clause('expression GT expression')  {|e1,_,e2| Gt.new(pos(0).line_number, e1,e2)}
       clause('expression LESS expression')  {|e1,_,e2| Less.new(pos(0).line_number, e1,e2)}
       clause('expression GTEQ expression')  {|e1,_,e2| GtEq.new(pos(0).line_number, e1,e2)}
-      clause('expression LESSEQ expression')  {|e1,_,e2| LessEQ.new(pos(0).line_number, e1,e2)}
+      clause('expression LESSEQ expression')  {|e1,_,e2| LessEq.new(pos(0).line_number, e1,e2)}
       clause('expression NOTEQLV expression')  {|e1,_,e2| NotEqlv.new(pos(0).line_number, e1,e2)}
       clause('expression EQLV expression')  {|e1,_,e2| Eqlv.new(pos(0).line_number, e1,e2)}
     end
