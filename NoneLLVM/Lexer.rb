@@ -20,6 +20,7 @@ module JS
     rule(/break/) { :BREAK  }
     rule(/function/) {  :FUNCTION   }
     rule(/return/)   {  :RETURN     }
+    rule(/assert/)   {  :ASSERT     }
 
     # operators and delimiters.
 		rule(/\(/)	{ :LPAREN }

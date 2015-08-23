@@ -1,6 +1,8 @@
+require './Assert'
 module JS
   class Contractor
     def initialize
+      @exit = false
       @gst = Hash.new
       @st = Hash.new
       @func = Hash.new
@@ -8,6 +10,9 @@ module JS
       @ret = nil
       @st["true"] = True.new(0, true)
       @st["false"] = False.new(0, false)
+    end
+    def init(ast)
+      @rootTree = ast
     end
     def getret
       return @ret
@@ -37,11 +42,34 @@ module JS
       else raise 'Attempting to ass an unhandled node type to JIT.'
       end
     end
+    def exit
+      return @exit
+    end
     def visit(ast)
       if ast == nil
         return nil
       end
+      if @exit
+        return
+      end
       case ast
+      when Assertion then
+        cond = visit(ast.cond)
+        varList = extract(ast.cond)
+        if !cond.value
+          asserter = JS::Assert.new
+          asserter.init(varList)
+          @rootTree.each do |node|
+            # puts node.inspect
+            asserter.add(node)
+            if asserter.exit()
+              break
+            end
+          end
+          #asserter.print()
+          asserter.printSlice()
+          @exit = true
+        end
       when Call then
         # create a new jit engine
         jit = JS::Contractor.new
@@ -223,6 +251,9 @@ module JS
         print str
       when And then
         left = visit(ast.left)
+        if left.value == false
+          return @st["false"]
+        end
         right = visit(ast.right)
         if typecheck(left, right, "JS::Bool") != nil
           val = (left.value && right.value)
@@ -236,6 +267,9 @@ module JS
         end
       when Or then
         left = visit(ast.left)
+        if left.value
+          return @st["true"]
+        end
         right = visit(ast.right)
         if typecheck(left, right, "JS::Bool") != nil
           val = (left.value || right.value)
@@ -399,9 +433,21 @@ module JS
         return false
       else
         @errors[lineno] = error
-        puts error
+        STDERR.puts error
         return true
       end
+    end
+    def extract(ast)
+      list = Array.new
+      case ast
+      when Variable then
+        list.push(ast.name)
+      when And,Or,Gt,Less,GtEq,LessEq,Eqlv,NotEqlv then
+        list = list + extract(ast.left)
+        list = list + extract(ast.right)
+      end
+      list.reject! { |c| c.empty? }
+      return list.uniq
     end
     def printfunc
       puts @func.inspect

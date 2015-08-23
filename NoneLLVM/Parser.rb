@@ -5,9 +5,9 @@ module JS
   class Parser < RLTK::Parser
     left  :PLUS,  :SUB
     left  :MUL,   :DIV
-    left  :GT,    :LESS,  :GTEQ, :LESSEQ
     left  :AND
     left  :OR
+    left  :GT,    :LESS,  :GTEQ, :LESSEQ
     left  :EQLV, :NOTEQLV
 
     @stmtList = nil
@@ -118,6 +118,7 @@ module JS
       clause('LBRA arrayfields RBRA') { |_,fields,_| List.new(pos(0).line_number, fields)}
       clause('BREAK') { |_| Break.new(pos(0).line_number)}
 
+      clause('ASSERT LPAREN expression RPAREN') {|_,_,exp,_| Assertion.new(pos(0).line_number, exp)}
       clause('RETURN expression') { |_,e| Return.new(pos(0).line_number, e)}
       clause('ID DOT ID') { |name, _, fname| ObjVariable.new(pos(0).line_number, name, fname)}
       clause('LPAREN expression RPAREN') {|_,e,_| e}

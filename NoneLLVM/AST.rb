@@ -95,6 +95,9 @@ module JS
     value :name,  String
     value :arg_names, [String]
   end
+  class Assertion < Expression
+    value :cond, Expression
+  end
   class Call < Expression
 		value :name, String
 		child :args, [Expression]

@@ -19,7 +19,3 @@ JS.rb     - The main ruby file that will parse the file supplied
             Use it like [ruby JS.rb input]
 parser    - The bash script will behave like specified
             Use it like [./parser input]
-
-Prerequisits - run [gem install rltk] before executing this program,
-               this program will not run unless rltk is installed on the host
-               machine
